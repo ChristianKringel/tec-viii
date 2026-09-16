@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Dataset de Ocupação de Vagas — TEC VIII</title>
+<style>
+  /* ---------- tokens ---------- */
+  :root{
+    --blue:#0F74A9;
+    --blue-dark:#08415F;
+    --blue-deep:#062F45;
+    --blue-soft:#E8F2F8;
+    --blue-line:#CCE2EF;
+    --orange:#C2620F;
+    --orange-soft:#FBEEE1;
+    --ink:#16212B;
+    --ink-2:#3D4E5C;
+    --muted:#6B7C8A;
+    --rule:#E2E8ED;
+    --surface:#FFFFFF;
+    --W:1280px;
+    --H:720px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#4a5560;font-family:"Inter","Liberation Sans",sans-serif;
+            color:var(--ink);-webkit-font-smoothing:antialiased}
+
+  .slide{
+    position:relative;width:var(--W);height:var(--H);
+    background:var(--surface);overflow:hidden;
+    margin:26px auto;box-shadow:0 10px 34px rgba(0,0,0,.34);
+    page-break-after:always;break-after:page;
+    display:flex;flex-direction:column;
+  }
+
+  /* ---------- footer bar ---------- */
+  .bar{
+    position:absolute;left:0;right:0;bottom:0;height:56px;background:var(--blue);
+    display:flex;align-items:center;padding:0 34px;color:#fff;
+  }
+  .bar .disc{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.95}
+  .bar .num{margin-left:auto;font-size:15px;font-weight:700;opacity:.95;padding-right:26px}
+  .bar .mark{display:flex;align-items:center;gap:12px;border-left:1.5px solid rgba(255,255,255,.45);padding-left:22px}
+  .bar .mark img{height:30px}
+  .bar .mark span{font-size:19px;font-weight:800;letter-spacing:.09em}
+
+  /* ---------- content frame ---------- */
+  .body{flex:1;padding:44px 62px 76px;display:flex;flex-direction:column;min-height:0}
+  .body.tight{padding-top:36px}
+
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+           color:var(--blue);margin-bottom:9px}
+  h2{font-size:37px;font-weight:800;line-height:1.1;letter-spacing:-.02em;color:var(--blue-dark)}
+  h2 .thin{font-weight:400;color:var(--muted)}
+  .sub{margin-top:9px;font-size:16.5px;color:var(--ink-2);line-height:1.45;max-width:1010px}
+  .rule{height:4px;width:74px;background:var(--blue);border-radius:3px;margin:16px 0 22px}
+
+  /* ---------- text bits ---------- */
+  ul.pts{list-style:none;display:flex;flex-direction:column;gap:13px}
+  ul.pts li{position:relative;padding-left:26px;font-size:16.5px;line-height:1.48;color:var(--ink-2)}
+  ul.pts li::before{content:"";position:absolute;left:0;top:9px;width:9px;height:9px;
+                    border-radius:50%;background:var(--blue)}
+  ul.pts li b{color:var(--ink);font-weight:700}
+  ul.pts.sm li{font-size:15px;gap:10px}
+
+  .lead{font-size:17.5px;line-height:1.5;color:var(--ink-2)}
+  .lead b{color:var(--ink)}
+
+  /* ---------- cards / stats ---------- */
+  .cards{display:grid;gap:18px}
+  .card{background:#F8FAFC;border:1px solid var(--rule);border-left:5px solid var(--blue);
+        border-radius:10px;padding:19px 21px}
+  .card h4{font-size:15px;font-weight:800;color:var(--blue-dark);margin-bottom:7px;
+           letter-spacing:.01em}
+  .card p{font-size:14.5px;line-height:1.48;color:var(--ink-2)}
+  .card.orange{border-left-color:var(--orange)}
+  .card.orange h4{color:#8A4509}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .stat{background:var(--blue-soft);border-radius:11px;padding:16px 16px;text-align:center}
+  .stat .n{font-size:38px;font-weight:800;color:var(--blue-dark);line-height:1;letter-spacing:-.03em}
+  .stat .l{margin-top:8px;font-size:12.5px;font-weight:600;color:var(--ink-2);line-height:1.35}
+
+  /* ---------- images ---------- */
+  figure{margin:0}
+  .shot{width:100%;border-radius:9px;border:1px solid var(--rule);display:block;object-fit:cover}
+  figcaption{margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.4}
+  figcaption b{color:var(--ink-2);font-weight:700}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .grid4{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:16px 20px}
+  .split{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:start;flex:1;min-height:0}
+
+  /* ---------- tables ---------- */
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th{text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+     color:var(--muted);padding:0 10px 9px;border-bottom:2px solid var(--blue-line)}
+  td{padding:10px;border-bottom:1px solid var(--rule);color:var(--ink-2)}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
+  tr.total td{border-bottom:none;font-weight:800;color:var(--ink);background:#F6F9FB}
+  .swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:9px;
+          vertical-align:-1px}
+
+  /* ---------- code / tree ---------- */
+  pre.code{background:var(--blue-deep);color:#D9E8F2;border-radius:10px;padding:17px 20px;
+           font-family:"DejaVu Sans Mono","Liberation Mono",monospace;font-size:13px;line-height:1.72;
+           overflow:hidden}
+  pre.code .c{color:#7FB6D6}
+  pre.code .k{color:#F2B279}
+  pre.tree{background:#F8FAFC;border:1px solid var(--rule);border-radius:10px;padding:18px 22px;
+           font-family:"DejaVu Sans Mono","Liberation Mono",monospace;font-size:13.5px;line-height:1.85;
+           color:var(--ink-2)}
+  pre.tree .d{color:var(--blue);font-weight:700}
+  pre.tree .n{color:var(--muted)}
+
+  .chip{display:inline-block;background:var(--blue-soft);color:var(--blue-dark);border-radius:999px;
+        padding:5px 13px;font-size:12.5px;font-weight:700;margin:0 7px 7px 0}
+
+  .link{color:var(--blue);font-weight:700;word-break:break-all}
+
+  /* ---------- cover ---------- */
+  .cover{background:linear-gradient(160deg,#0B5C86 0%,#0F74A9 46%,#12557A 100%);
+         color:#fff;justify-content:center;align-items:center;text-align:center;padding:0 90px}
+  .cover::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 78% 16%,rgba(255,255,255,.14),transparent 46%),
+               radial-gradient(circle at 12% 88%,rgba(255,255,255,.10),transparent 44%)}
+  .cover > *{position:relative;z-index:2}
+  .seal-badge{width:126px;height:126px;border-radius:50%;background:#fff;margin:0 auto 24px;
+               display:flex;align-items:center;justify-content:center;
+               box-shadow:0 8px 22px rgba(0,0,0,.26)}
+  .seal-badge img{width:104px;display:block}
+  .cover .course{font-size:12.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+                 opacity:.85;margin-bottom:16px}
+  .cover h1{font-size:47px;font-weight:800;line-height:1.12;letter-spacing:-.025em;max-width:960px}
+  .cover .tag{margin-top:13px;font-size:18px;font-weight:400;opacity:.9}
+  .cover .hr{width:90px;height:3px;background:rgba(255,255,255,.5);border-radius:2px;margin:26px auto}
+  .cover .prof{font-size:15.5px;opacity:.93}
+  .cover .prof b{font-weight:700}
+  .cover .team{margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .cover .team span{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+                    border-radius:999px;padding:7px 17px;font-size:14px;font-weight:600}
+  .cover .inst{position:absolute;bottom:34px;left:0;right:0;font-size:12.5px;letter-spacing:.09em;
+               opacity:.72;z-index:2;text-transform:uppercase;font-weight:600}
+
+  /* ---------- agenda ---------- */
+  .agenda{display:grid;grid-template-columns:1fr 1fr;gap:14px 30px;margin-top:6px}
+  .ag{display:flex;gap:15px;align-items:center;padding:13px 17px;background:#F8FAFC;
+      border:1px solid var(--rule);border-radius:10px}
+  .ag .i{width:31px;height:31px;flex:none;border-radius:8px;background:var(--blue);color:#fff;
+         display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800}
+  .ag .t{font-size:15.5px;font-weight:700;color:var(--blue-dark)}
+
+  /* ---------- closing ---------- */
+  .close{background:linear-gradient(160deg,#0B5C86 0%,#0F74A9 50%,#12557A 100%);color:#fff;
+         justify-content:center;align-items:center;text-align:center;padding:0 90px}
+  .close::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.13),transparent 45%)}
+  .close > *{position:relative;z-index:2}
+  .close h1{font-size:52px;font-weight:800;letter-spacing:-.02em}
+  .close p{margin-top:14px;font-size:18px;opacity:.9}
+  .close .box{margin-top:32px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.24);
+              border-radius:13px;padding:20px 34px;font-size:14.5px;line-height:1.85}
+  .close .box b{letter-spacing:.06em;font-size:12px;text-transform:uppercase;opacity:.8}
+
+  .note{margin-top:auto;margin-bottom:20px;font-size:13px;color:var(--muted);
+        border-top:1px solid var(--rule);padding-top:12px;line-height:1.5}
+  .note b{color:var(--ink-2)}
+
+  @page{size:1280px 720px;margin:0}
+  @media print{
+    html,body{background:#fff}
+    .slide{margin:0;box-shadow:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 1 · CAPA ============ -->
+<section class="slide cover">
+  <div class="seal-badge"><img src="img/ufpel.png" alt="Brasão da Universidade Federal de Pelotas"></div>
+  <div class="course">Tópicos Especiais em Computação VIII</div>
+  <h1>Construção de um Dataset para Detecção de Ocupação de Vagas</h1>
+  <div class="tag">Estacionamento do Campus Anglo — UFPel</div>
+  <div class="hr"></div>
+  <div class="prof">Prof. <b>Marcelo da Silva Dias</b></div>
+  <div class="team">
+    <span>Christian Rodrigo Miritz Kringel</span>
+    <span>Henrique Colares Versiani</span>
+    <span>Vinicius Hallmann</span>
+    <span>Thiago Dias Mazzoni</span>
+  </div>
+  <div class="inst">Ciência da Computação · Engenharia da Computação · Universidade Federal de Pelotas</div>
+</section>
+
+<!-- ============ 2 · ROTEIRO ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">Roteiro</div>
+    <h2>O que vamos apresentar</h2>
+    <div class="rule"></div>
+    <div class="agenda">
+      <div class="ag"><div class="i">1</div><div class="t">Descrição do dataset</div></div>
+      <div class="ag"><div class="i">2</div><div class="t">Método de aquisição</div></div>
+      <div class="ag"><div class="i">3</div><div class="t">Classes e distribuição</div></div>
+      <div class="ag"><div class="i">4</div><div class="t">Anotações e critérios</div></div>
+      <div class="ag"><div class="i">5</div><div class="t">Qualidade e consistência</div></div>
+      <div class="ag"><div class="i">6</div><div class="t">Organização dos arquivos</div></div>
+      <div class="ag"><div class="i">7</div><div class="t">Considerações finais</div></div>
+      <div class="ag"><div class="i">8</div><div class="t">Links do dataset</div></div>
+    </div>
+    <div class="note"><b>Em uma frase:</b> fotografamos o estacionamento da frente do Anglo em vários dias,
+      horários e ângulos, e anotamos cada veículo estacionado com <i>bounding boxes</i> no formato YOLO —
+      1.097 caixas em 28 imagens.</div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">2</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 3 · DESCRIÇÃO ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">1 · Descrição do dataset</div>
+    <h2>O que as imagens representam</h2>
+    <div class="rule" style="margin:15px 0 20px"></div>
+    <div class="stats" style="margin-bottom:20px">
+      <div class="stat"><div class="n">30</div><div class="l">imagens coletadas no total</div></div>
+      <div class="stat"><div class="n">28</div><div class="l">imagens anotadas<br>(2 descartadas por repetição)</div></div>
+      <div class="stat"><div class="n">1.097</div><div class="l">bounding boxes anotadas</div></div>
+      <div class="stat"><div class="n">39,2</div><div class="l">média de veículos por imagem</div></div>
+    </div>
+    <div class="split">
+      <div class="cards" style="grid-template-columns:1fr;gap:12px">
+        <div class="card" style="padding:14px 18px">
+          <h4>Cena registrada</h4>
+          <p>O estacionamento localizado na <b>frente do Campus Anglo da UFPel</b>, entre o prédio
+             principal e a biblioteca. Cada foto é uma visão elevada do pátio inteiro, com os veículos
+             estacionados e as vagas livres visíveis na mesma cena.</p>
+        </div>
+        <div class="card" style="padding:14px 18px">
+          <h4>Objetivo</h4>
+          <p>Reunir dados reais desse estacionamento para <b>treinar um modelo de detecção capaz de
+             identificar vagas disponíveis a partir de imagens</b>. Detectando os veículos que ocupam o
+             pátio, é possível inferir por diferença quais vagas estão livres.</p>
+        </div>
+        <div class="card" style="padding:14px 18px">
+          <h4>Por que esse local</h4>
+          <p>Pátio de uso intenso, com ocupação que varia bastante ao longo do dia — o que dá
+             variedade natural ao dataset.</p>
+        </div>
+      </div>
+      <figure>
+        <img class="shot" style="height:320px" src="img/acq_sol.jpg"
+             alt="Estacionamento do Anglo lotado, dia ensolarado">
+        <figcaption><b>Cena típica do dataset.</b> Pátio praticamente lotado em manhã de sol; as três
+          fileiras de veículos e o prédio da biblioteca ao fundo aparecem em quase todas as imagens.</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">3</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 4 · AQUISIÇÃO ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">2 · Método de aquisição</div>
+    <h2>Como e onde as imagens foram obtidas</h2>
+    <div class="rule"></div>
+    <div class="split">
+      <div>
+        <ul class="pts">
+          <li><b>Coletadas pelo próprio grupo.</b> Nenhuma imagem veio de banco público, internet ou
+              dataset de terceiros — todas as 30 fotos foram tiradas pelos integrantes.</li>
+          <li><b>Equipamento:</b> celulares pessoais dos quatro integrantes, com câmeras e resoluções
+              diferentes. Isso aparece no dataset como variação de resolução e de qualidade de imagem.</li>
+          <li><b>Pontos de captura:</b> janelas e passarelas dos andares superiores do prédio do Anglo,
+              sempre em vista elevada, mas com enquadramentos e alturas distintas.</li>
+          <li><b>Distribuição temporal:</b> fotos tiradas em <b>dias diferentes</b> (07, 09 e 15 de
+              setembro) e em <b>horários diferentes</b>, capturando o pátio cheio e quase vazio.</li>
+          <li><b>Condições de clima:</b> registros em dias de sol aberto, céu parcialmente nublado e céu
+              totalmente encoberto — variando sombra, contraste e temperatura de cor.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card orange" style="padding:16px 19px">
+          <h4>Por que essa variação importa</h4>
+          <p>Múltiplos ângulos, climas e câmeras evitam que o modelo aprenda uma única configuração
+             fixa de cena. A diversidade foi buscada de propósito, e não um acaso da coleta.</p>
+        </div>
+        <div style="margin:18px 0 6px;font-size:12px;font-weight:700;letter-spacing:.11em;
+                    text-transform:uppercase;color:var(--ink-2)">Resoluções presentes no dataset</div>
+        <div>
+          <span class="chip">1600 × 1200</span><span class="chip">1280 × 720</span>
+          <span class="chip">1200 × 1600</span><span class="chip">1280 × 960</span>
+          <span class="chip">1600 × 1227</span>
+        </div>
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:4px">
+          Reflexo direto dos diferentes aparelhos usados — inclusive uma imagem em orientação retrato.</p>
+        <div class="card" style="margin-top:18px;padding:16px 19px">
+          <h4>Observação sobre os arquivos</h4>
+          <p>As imagens foram reunidas via WhatsApp, então o nome e a data de cada arquivo correspondem
+             ao momento do <b>envio</b>, e não necessariamente ao da captura: os metadados EXIF
+             originais foram removidos pelo aplicativo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">4</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 5 · VARIAÇÃO ============ -->
+<section class="slide">
+  <div class="body tight">
+    <div class="eyebrow">2 · Método de aquisição</div>
+    <h2>Variação de condições registrada</h2>
+    <div class="rule" style="margin:14px 0 18px"></div>
+    <div class="grid4">
+      <figure>
+        <img class="shot" style="height:213px" src="img/acq_sol.jpg" alt="">
+        <figcaption><b>Sol aberto, pátio lotado.</b> Sombras duras e alto contraste.</figcaption>
+      </figure>
+      <figure>
+        <img class="shot" style="height:213px" src="img/acq_nublado.jpg" alt="">
+        <figcaption><b>Céu encoberto, pátio quase vazio.</b> Luz difusa e poucos veículos.</figcaption>
+      </figure>
+      <figure>
+        <img class="shot" style="height:213px;object-position:center 30%" src="img/acq_720.jpg" alt="">
+        <figcaption><b>Outro aparelho e enquadramento.</b> 1280 × 720, ponto de vista mais baixo.</figcaption>
+      </figure>
+      <figure>
+        <img class="shot" style="height:213px;object-position:center 42%" src="img/acq_retrato.jpg" alt="">
+        <figcaption><b>Orientação retrato.</b> Enquadramento vertical, de outro ponto do prédio.</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">5</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 6 · CLASSES ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">3 · Classes</div>
+    <h2>Quais classes foram definidas</h2>
+    <div class="rule"></div>
+    <div class="split">
+      <div>
+        <ul class="pts">
+          <li><b>carro</b> — qualquer automóvel de passeio estacionado no pátio: hatch, sedã, SUV,
+              picape ou utilitário. É a classe dominante do dataset.</li>
+          <li><b>moto</b> — motocicletas estacionadas, concentradas na área lateral reservada a elas,
+              próxima ao muro dos fundos.</li>
+        </ul>
+        <div class="card orange" style="margin-top:20px">
+          <h4>Decisão tomada durante a construção</h4>
+          <p>O arquivo <code>obj.names</code> foi criado com quatro rótulos previstos —
+             <b>carro</b>, <b>suv_picape</b>, <b>moto</b> e <b>vaga_livre</b>. Na prática, separar
+             <i>carro</i> de <i>suv_picape</i> gerava dúvida em quase toda imagem (a distinção some na
+             vista de cima) e <i>vaga_livre</i> exigiria demarcar o asfalto vazio, o que fugia do
+             escopo. <b>Consolidamos a anotação em duas classes efetivas:</b> carro e moto.</p>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h4>E a vaga livre?</h4>
+          <p>A vaga disponível não é anotada diretamente: ela é <b>inferida</b> a partir da ausência de
+             veículo detectado sobre a região da vaga. Anotamos a ocupação, não o vazio.</p>
+        </div>
+      </div>
+      <div>
+        <figure>
+          <img class="shot" src="img/crop_moto.jpg" alt="Recorte mostrando cinco motos anotadas">
+          <figcaption><b>A classe <i>moto</i> na prática.</b> Recorte da área lateral do pátio, onde
+            aparece a maior concentração de motocicletas do dataset — cinco caixas em uma única imagem.</figcaption>
+        </figure>
+        <div class="stats" style="grid-template-columns:1fr 1fr;margin-top:22px">
+          <div class="stat"><div class="n">2</div><div class="l">classes efetivamente anotadas</div></div>
+          <div class="stat"><div class="n">3</div><div class="l">imagens contêm motos</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">6</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 7 · DISTRIBUIÇÃO ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">3 · Classes</div>
+    <h2>Distribuição das classes</h2>
+    <div class="rule"></div>
+    <div class="split" style="grid-template-columns:1fr 1fr;gap:44px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:14px">
+          Caixas anotadas por classe
+        </div>
+        <svg width="500" height="150" viewBox="0 0 500 150" role="img"
+             aria-label="Gráfico de barras: carro 1087 caixas, moto 10 caixas">
+          <!-- carro -->
+          <text x="0" y="24" font-family="Inter" font-size="14" font-weight="700" fill="#16212B">carro</text>
+          <rect x="0" y="32" width="452" height="26" rx="4" fill="#0F74A9"/>
+          <text x="440" y="50" font-family="Inter" font-size="14.5" font-weight="800" fill="#FFFFFF"
+                text-anchor="end">1.087</text>
+          <text x="462" y="50" font-family="Inter" font-size="13" fill="#6B7C8A">99,1%</text>
+          <!-- moto -->
+          <text x="0" y="98" font-family="Inter" font-size="14" font-weight="700" fill="#16212B">moto</text>
+          <rect x="0" y="106" width="4.2" height="26" rx="2" fill="#C2620F"/>
+          <text x="14" y="125" font-family="Inter" font-size="14.5" font-weight="800" fill="#16212B">10</text>
+          <text x="36" y="125" font-family="Inter" font-size="13" fill="#6B7C8A">0,9%</text>
+          <!-- baseline -->
+          <line x1="0" y1="140" x2="470" y2="140" stroke="#E2E8ED" stroke-width="1"/>
+          <text x="0" y="150" font-family="Inter" font-size="11" fill="#9AA8B4">0</text>
+          <text x="470" y="150" font-family="Inter" font-size="11" fill="#9AA8B4" text-anchor="end">1.100</text>
+        </svg>
+
+        <table style="margin-top:24px">
+          <thead><tr><th>Classe</th><th style="text-align:right">Caixas</th>
+            <th style="text-align:right">%</th><th style="text-align:right">Imagens</th></tr></thead>
+          <tbody>
+            <tr><td><span class="swatch" style="background:#0F74A9"></span>carro</td>
+                <td class="n">1.087</td><td class="n">99,1%</td><td class="n">28</td></tr>
+            <tr><td><span class="swatch" style="background:#C2620F"></span>moto</td>
+                <td class="n">10</td><td class="n">0,9%</td><td class="n">3</td></tr>
+            <tr class="total"><td>Total</td><td class="n">1.097</td><td class="n">100%</td>
+                <td class="n">28</td></tr>
+          </tbody>
+        </table>
+        <div class="card orange" style="margin-top:18px;padding:14px 18px">
+          <h4>Desbalanceamento acentuado</h4>
+          <p>Para cada moto anotada há cerca de <b>109 carros</b>. É a principal limitação atual do
+             dataset: um modelo treinado assim tende a detectar carros bem e motos mal.</p>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:14px">
+          Veículos anotados por imagem <span style="font-weight:400;color:var(--muted)">(28 imagens,
+          ordenadas)</span>
+        </div>
+        <svg width="500" height="252" viewBox="0 0 500 252" role="img"
+             aria-label="Gráfico de barras: número de veículos anotados em cada uma das 28 imagens, variando de 14 a 63">
+          <!-- grid -->
+          <g stroke="#EDF2F6" stroke-width="1">
+            <line x1="34" y1="200" x2="500" y2="200"/>
+            <line x1="34" y1="150" x2="500" y2="150"/>
+            <line x1="34" y1="100" x2="500" y2="100"/>
+            <line x1="34" y1="50" x2="500" y2="50"/>
+          </g>
+          <g font-family="Inter" font-size="10.5" fill="#9AA8B4" text-anchor="end">
+            <text x="27" y="204">0</text><text x="27" y="154">20</text>
+            <text x="27" y="104">40</text><text x="27" y="54">60</text>
+          </g>
+          <!-- bars: 28 valores, escala 2.5px por unidade, base y=200 -->
+          <g fill="#0F74A9">
+            <rect x="38"  y="42.5"  width="12.4" height="157.5" rx="3"/>
+            <rect x="54.4" y="62.5" width="12.4" height="137.5" rx="3"/>
+            <rect x="70.8" y="70"   width="12.4" height="130"   rx="3"/>
+            <rect x="87.2" y="72.5" width="12.4" height="127.5" rx="3"/>
+            <rect x="103.6" y="72.5" width="12.4" height="127.5" rx="3"/>
+            <rect x="120"  y="75"   width="12.4" height="125"   rx="3"/>
+            <rect x="136.4" y="77.5" width="12.4" height="122.5" rx="3"/>
+            <rect x="152.8" y="77.5" width="12.4" height="122.5" rx="3"/>
+            <rect x="169.2" y="77.5" width="12.4" height="122.5" rx="3"/>
+            <rect x="185.6" y="77.5" width="12.4" height="122.5" rx="3"/>
+            <rect x="202"  y="90"   width="12.4" height="110"   rx="3"/>
+            <rect x="218.4" y="90"  width="12.4" height="110"   rx="3"/>
+            <rect x="234.8" y="95"  width="12.4" height="105"   rx="3"/>
+            <rect x="251.2" y="102.5" width="12.4" height="97.5" rx="3"/>
+            <rect x="267.6" y="102.5" width="12.4" height="97.5" rx="3"/>
+            <rect x="284"  y="107.5" width="12.4" height="92.5" rx="3"/>
+            <rect x="300.4" y="120" width="12.4" height="80"   rx="3"/>
+            <rect x="316.8" y="120" width="12.4" height="80"   rx="3"/>
+            <rect x="333.2" y="120" width="12.4" height="80"   rx="3"/>
+            <rect x="349.6" y="122.5" width="12.4" height="77.5" rx="3"/>
+            <rect x="366"  y="122.5" width="12.4" height="77.5" rx="3"/>
+            <rect x="382.4" y="122.5" width="12.4" height="77.5" rx="3"/>
+            <rect x="398.8" y="125" width="12.4" height="75"   rx="3"/>
+            <rect x="415.2" y="130" width="12.4" height="70"   rx="3"/>
+            <rect x="431.6" y="132.5" width="12.4" height="67.5" rx="3"/>
+            <rect x="448"  y="135"  width="12.4" height="65"   rx="3"/>
+            <rect x="464.4" y="150" width="12.4" height="50"   rx="3"/>
+            <rect x="480.8" y="165" width="12.4" height="35"   rx="3"/>
+          </g>
+          <!-- media -->
+          <line x1="34" y1="102" x2="500" y2="102" stroke="#C2620F" stroke-width="2"
+                stroke-dasharray="5 4"/>
+          <text x="498" y="96" font-family="Inter" font-size="11.5" font-weight="700" fill="#C2620F"
+                text-anchor="end">média 39,2</text>
+          <!-- rotulos extremos -->
+          <text x="44" y="36" font-family="Inter" font-size="11.5" font-weight="700" fill="#16212B"
+                text-anchor="middle">63</text>
+          <text x="487" y="159" font-family="Inter" font-size="11.5" font-weight="700" fill="#16212B"
+                text-anchor="middle">14</text>
+          <line x1="34" y1="200" x2="500" y2="200" stroke="#C7D4DE" stroke-width="1.5"/>
+          <text x="38" y="216" font-family="Inter" font-size="10.5" fill="#9AA8B4">imagem mais cheia</text>
+          <text x="493" y="216" font-family="Inter" font-size="10.5" fill="#9AA8B4"
+                text-anchor="end">mais vazia</text>
+        </svg>
+        <ul class="pts sm" style="margin-top:16px">
+          <li>A ocupação do pátio vai de <b>14 a 63 veículos</b> por imagem — mediana de 39.</li>
+          <li>Essa amplitude é intencional: o dataset cobre desde o estacionamento praticamente
+              vazio até o completamente lotado.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">7</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 8 · TIPO DE ANOTAÇÃO ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">4 · Anotações</div>
+    <h2>Tipo de anotação utilizada</h2>
+    <div class="rule"></div>
+    <div class="split">
+      <div>
+        <ul class="pts">
+          <li><b>Bounding boxes</b> (caixas delimitadoras retangulares, alinhadas aos eixos) — uma
+              caixa por veículo estacionado.</li>
+          <li><b>Ferramenta:</b> <b>CVAT</b>, com o projeto compartilhado entre os integrantes para que
+              todos anotassem sob a mesma configuração de classes.</li>
+          <li><b>Formato exportado:</b> <b>YOLO 1.1</b> — um arquivo <code>.txt</code> por imagem, com
+              o mesmo nome-base da imagem, mais o <code>obj.names</code> com a lista de classes.</li>
+          <li>Coordenadas <b>normalizadas entre 0 e 1</b> em relação à largura e à altura da imagem,
+              o que torna a anotação independente da resolução — importante aqui, já que o dataset
+              tem cinco resoluções diferentes.</li>
+          <li>Imagem <b>sem nenhum veículo válido</b> geraria um <code>.txt</code> vazio; no nosso
+              caso todas as 28 imagens anotadas contêm veículos.</li>
+        </ul>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:11px">
+          Estrutura de uma linha do arquivo <code>.txt</code></div>
+<pre class="code"><span class="c"># &lt;classe&gt; &lt;x_centro&gt; &lt;y_centro&gt; &lt;largura&gt; &lt;altura&gt;</span>
+<span class="k">0</span> 0.784062 0.581667 0.048125 0.043333
+<span class="k">0</span> 0.828125 0.584583 0.046250 0.049167
+<span class="k">0</span> 0.739062 0.547500 0.040625 0.030000
+<span class="k">2</span> 0.772500 0.370000 0.016250 0.020000
+<span class="c">...</span></pre>
+        <div style="font-size:13px;font-weight:700;color:var(--ink-2);margin:20px 0 11px">
+          <code>obj.names</code> — índice de cada classe</div>
+<pre class="code"><span class="c">0</span>  carro        <span class="c">← classe usada</span>
+<span class="c">1</span>  suv_picape   <span class="c">← prevista, não utilizada</span>
+<span class="c">2</span>  moto         <span class="c">← classe usada</span>
+<span class="c">3</span>  vaga_livre   <span class="c">← prevista, não utilizada</span></pre>
+      </div>
+    </div>
+    <div class="note"><b>Por que <i>bounding box</i> e não segmentação:</b> para decidir se uma vaga está
+      ocupada basta saber <i>onde</i> o veículo está, não o seu contorno exato. A caixa é mais rápida de
+      anotar, mais consistente entre quatro anotadores e suficiente para o objetivo do dataset.</div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">8</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 9 · EXEMPLOS ANOTADOS ============ -->
+<section class="slide">
+  <div class="body tight">
+    <div class="eyebrow">4 · Anotações</div>
+    <h2>Exemplos de imagens anotadas</h2>
+    <div class="rule" style="margin:14px 0 18px"></div>
+    <div class="grid2">
+      <figure>
+        <img class="shot" src="img/ann_cheio.jpg" alt="">
+        <figcaption><b>Ocupação alta — 44 caixas.</b> Três fileiras completas; a densidade força
+          caixas vizinhas a se encostarem e se sobreporem.</figcaption>
+      </figure>
+      <figure>
+        <img class="shot" src="img/ann_vazio.jpg" alt="">
+        <figcaption><b>Ocupação mínima — 14 caixas.</b> Dia encoberto e pátio quase vazio; note que os
+          carros trafegando na rua ao fundo <b>não</b> foram anotados.</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">9</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 10 · CRITÉRIOS ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">4 · Anotações</div>
+    <h2>Critérios utilizados para anotar</h2>
+    <div class="rule"></div>
+    <div class="split" style="grid-template-columns:1.1fr .9fr">
+      <div>
+        <div class="card" style="border-left-width:6px;margin-bottom:16px">
+          <h4>Regra principal</h4>
+          <p style="font-size:16px"><b>Anotar todo veículo estacionado dentro do estacionamento-alvo.</b>
+             Se está parado ocupando uma posição do pátio, vira caixa. Caso contrário, não.</p>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:10px">
+          Regras derivadas que aplicamos</div>
+        <ul class="pts sm">
+          <li><b>Veículo em movimento não é anotado.</b> Carro manobrando ou passando pelo pátio não
+              ocupa vaga e ficou de fora.</li>
+          <li><b>Veículo fora do pátio-alvo não é anotado.</b> Carros na rua, na calçada ou no
+              estacionamento vizinho ao fundo foram ignorados.</li>
+          <li><b>A caixa envolve o veículo inteiro visível</b>, encostando nos limites da carroceria,
+              sem margem sobrando e sem cortar parte do carro.</li>
+          <li><b>Veículo parcialmente ocluso é anotado</b> pela porção visível, desde que ainda dê para
+              identificá-lo com segurança como veículo estacionado.</li>
+          <li><b>Uma caixa por veículo</b>, mesmo quando dois carros se sobrepõem fortemente na imagem.</li>
+        </ul>
+      </div>
+      <div>
+        <figure>
+          <img class="shot" src="img/crop_movimento.jpg" alt="">
+          <figcaption><b>O critério em ação.</b> Os três veículos parados nas vagas recebem caixa;
+            o carro preto, em movimento pelo pátio, fica sem anotação por não estar ocupando vaga.</figcaption>
+        </figure>
+        <div class="card orange" style="margin-top:18px">
+          <h4>Por que esse recorte</h4>
+          <p>O objetivo do dataset é <b>ocupação de vaga</b>, não detecção genérica de veículos.
+             Anotar carros na rua ensinaria o modelo a contar veículos que não têm relação com a
+             disponibilidade do estacionamento.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">10</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 11 · SITUAÇÕES ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">4 · Anotações</div>
+    <h2>Diferentes situações encontradas</h2>
+    <div class="rule"></div>
+    <div class="grid2" style="gap:22px 30px">
+      <figure>
+        <img class="shot" style="height:198px" src="img/crop_bom.jpg" alt="">
+        <figcaption><b>Caso fácil.</b> Veículos isolados, bem separados e em primeiro plano: caixas
+          justas, sem ambiguidade.</figcaption>
+      </figure>
+      <figure>
+        <img class="shot" style="height:198px" src="img/crop_oclusao.jpg" alt="">
+        <figcaption><b>Caso difícil — oclusão e escala pequena.</b> Ao fundo e à direita os carros se
+          escondem atrás uns dos outros e ficam com poucos pixels.</figcaption>
+      </figure>
+      <figure>
+        <img class="shot" style="height:198px" src="img/crop_moto.jpg" alt="">
+        <figcaption><b>Classe minoritária.</b> Motos agrupadas na lateral, muito menores que os
+          carros e quase coladas entre si.</figcaption>
+      </figure>
+      <figure>
+        <img class="shot" style="height:198px;object-position:center 35%" src="img/ann_moto_full.jpg" alt="">
+        <figcaption><b>Ângulo e enquadramento distintos.</b> Outro ponto de captura, com pedestres,
+          postes e o guarda-corpo cruzando a cena.</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">11</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 12 · QUALIDADE ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">5 · Qualidade e consistência</div>
+    <h2>Anotações corretas e casos ambíguos</h2>
+    <div class="rule" style="margin:15px 0 20px"></div>
+    <div class="split" style="grid-template-columns:1fr 1fr;gap:30px">
+      <div>
+        <figure>
+          <img class="shot" style="height:152px" src="img/crop_bom.jpg" alt="">
+          <figcaption><b>Anotação correta.</b> A caixa acompanha os limites da carroceria, inclui
+            retrovisores e para-choque, e não invade o veículo ao lado.</figcaption>
+        </figure>
+        <div class="card" style="margin-top:16px;padding:16px 19px">
+          <h4>Como mantivemos o padrão</h4>
+          <ul class="pts sm" style="margin-top:9px;gap:8px">
+            <li><b>Um único projeto no CVAT</b>, com lista de classes fixa, evitando rótulos
+                divergentes.</li>
+            <li><b>Critério combinado antes de anotar</b> e reafirmado sempre que surgia dúvida nova.</li>
+            <li><b>Revisão visual de todas as imagens</b> com as caixas por cima — a pasta
+                <code>preview/</code> — para flagrar caixas soltas ou veículos esquecidos.</li>
+            <li>Na dúvida, <b>a decisão foi conversada no grupo</b> e aplicada igual dali em diante.</li>
+          </ul>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:13px">
+        <div class="card orange" style="padding:14px 18px">
+          <h4>Dificuldade 1 — oclusão à direita da cena</h4>
+          <p style="font-size:13.5px">Os carros à direita aparecem inclinados e escondidos atrás uns dos
+             outros; definir onde termina um e começa o outro foi a dúvida mais frequente.</p>
+        </div>
+        <div class="card orange" style="padding:14px 18px">
+          <h4>Dificuldade 2 — veículos muito pequenos ao fundo</h4>
+          <p style="font-size:13.5px">Nas fileiras distantes cada carro ocupa poucos pixels: um erro de
+             poucos pixels vira uma variação grande em proporção.</p>
+        </div>
+        <div class="card orange" style="padding:14px 18px">
+          <h4>Dificuldade 3 — limite do estacionamento</h4>
+          <p style="font-size:13.5px">Veículos parados na borda do pátio, junto à rua ou ao
+             estacionamento vizinho, exigiram decidir caso a caso se estavam no recorte de interesse.</p>
+        </div>
+        <div class="card orange" style="padding:14px 18px">
+          <h4>Dificuldade 4 — obstruções da própria cena</h4>
+          <p style="font-size:13.5px">Postes, placas, árvores e o guarda-corpo do prédio cortam veículos
+             ao meio, dividindo visualmente um mesmo carro.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">12</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 13 · ORGANIZAÇÃO ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">6 · Organização dos arquivos</div>
+    <h2>Como o dataset está estruturado</h2>
+    <div class="rule"></div>
+    <div class="split" style="grid-template-columns:1.02fr .98fr">
+      <div>
+<pre class="tree"><span class="d">tec-viii/</span>
+├── <span class="d">dataset/</span>            <span class="n"># 30 imagens originais (.jpeg)</span>
+│     ├── WhatsApp Image ... 08.27.30.jpeg
+│     └── ...
+├── <span class="d">annotations/</span>        <span class="n"># 28 rótulos YOLO (.txt)</span>
+│     ├── obj.names       <span class="n"># lista de classes</span>
+│     ├── WhatsApp Image ... 08.27.30.txt
+│     └── ...
+└── <span class="d">preview/</span>            <span class="n"># 28 imagens com as boxes (.jpg)</span>
+      ├── WhatsApp Image ... 08.27.30_bbox.jpg
+      └── ...</pre>
+        <div class="card" style="margin-top:16px;padding:16px 19px">
+          <h4>Vínculo entre imagem e anotação</h4>
+          <p>O pareamento é feito pelo <b>nome-base do arquivo</b>: a imagem
+             <code>&lt;nome&gt;.jpeg</code>, seu rótulo <code>&lt;nome&gt;.txt</code> e a conferência
+             visual <code>&lt;nome&gt;_bbox.jpg</code>. A classe de cada objeto não está no nome do
+             arquivo, e sim no <b>índice numérico</b> da primeira coluna do <code>.txt</code>,
+             resolvido pelo <code>obj.names</code>.</p>
+        </div>
+      </div>
+      <div>
+        <div class="cards" style="grid-template-columns:1fr;gap:13px">
+          <div class="card" style="padding:14px 18px">
+            <h4>dataset/</h4>
+            <p style="font-size:13.5px">As fotos originais, sem edição, corte ou redimensionamento —
+               exatamente como saíram das câmeras.</p>
+          </div>
+          <div class="card" style="padding:14px 18px">
+            <h4>annotations/</h4>
+            <p style="font-size:13.5px">Exportação YOLO 1.1 do CVAT: um <code>.txt</code> por imagem mais
+               o <code>obj.names</code>. É a pasta consumida no treino.</p>
+          </div>
+          <div class="card" style="padding:14px 18px">
+            <h4>preview/</h4>
+            <p style="font-size:13.5px">Imagens com as caixas desenhadas sobre a foto. Não entram no
+               treino: servem para <b>conferência visual</b>.</p>
+          </div>
+        </div>
+        <div style="margin-top:14px;background:var(--blue-soft);border-radius:11px;padding:15px 20px">
+          <div style="font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+                      color:var(--blue-dark);margin-bottom:9px">Disponibilização</div>
+          <div style="font-size:13px;line-height:1.6;color:var(--ink-2)">
+            <b>GitHub</b> · <span class="link">github.com/ChristianKringel/tec-viii</span><br>
+            <b>Google Drive</b> ·
+            <span class="link">drive.google.com/drive/folders/1TzQct9VGSevgPlzMjUzr4fokH7r9WS3x</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">13</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 14 · CONSIDERAÇÕES ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">7 · Considerações finais</div>
+    <h2>Dificuldades e decisões do caminho</h2>
+    <div class="rule"></div>
+    <div class="split" style="grid-template-columns:1fr 1fr;gap:34px">
+      <div>
+        <div style="font-size:12px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+                    color:var(--orange);margin-bottom:13px">Principais dificuldades</div>
+        <ul class="pts sm">
+          <li><b>Curva de aprendizado da ferramenta.</b> No começo o grupo não dominava o CVAT e o
+              fluxo de anotação; as primeiras imagens foram bem mais lentas que as últimas.</li>
+          <li><b>Reunir volume de imagens.</b> Depender de ir ao local, em horários e climas
+              diferentes, limitou o tamanho do dataset a 30 fotos.</li>
+          <li><b>Oclusão entre veículos</b>, principalmente na lateral direita das cenas, onde os
+              carros se escondem uns atrás dos outros.</li>
+          <li><b>Repetição de cena.</b> Duas imagens ficaram redundantes em relação a outras já
+              anotadas e foram deixadas de fora da anotação.</li>
+          <li><b>Padronizar o critério entre quatro pessoas</b> anotando, garantindo que todos
+              marcassem as mesmas coisas do mesmo jeito.</li>
+        </ul>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+                    color:var(--blue);margin-bottom:13px">Decisões importantes</div>
+        <ul class="pts sm">
+          <li><b>Reduzir de quatro para duas classes efetivas.</b> <i>suv_picape</i> e <i>vaga_livre</i>
+              foram abandonadas por gerarem ambiguidade e fugirem do escopo.</li>
+          <li><b>Mudar a técnica de marcação dentro do CVAT.</b> Começamos desenhando cada caixa
+              manualmente e passamos a usar a <b>varinha mágica</b> da ferramenta, que acelerou muito
+              a anotação e deixou as caixas mais justas.</li>
+          <li><b>Anotar ocupação em vez de vaga vazia</b>, inferindo a disponibilidade pela ausência
+              de veículo detectado.</li>
+          <li><b>Não anotar veículos em movimento nem fora do pátio</b>, mantendo o dataset alinhado
+              ao objetivo de ocupação.</li>
+          <li><b>Gerar a pasta <code>preview/</code></b> como etapa obrigatória de revisão antes de
+              considerar uma imagem concluída.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note"><b>Próximos passos naturais:</b> ampliar o número de imagens, reforçar a classe
+      <i>moto</i> para reduzir o desbalanceamento e incluir capturas noturnas e de dias de chuva,
+      condições ainda não cobertas pelo dataset.</div>
+  </div>
+  <div class="bar">
+    <div class="disc">Tópicos Especiais em Computação VIII</div>
+    <div class="num">14</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div>
+  </div>
+</section>
+
+<!-- ============ 15 · ENCERRAMENTO ============ -->
+<section class="slide close">
+  <div class="seal-badge" style="width:96px;height:96px;margin-bottom:26px">
+    <img src="img/ufpel.png" style="width:78px" alt="Brasão da UFPel">
+  </div>
+  <h1>Obrigado!</h1>
+  <p>Dataset de ocupação de vagas — Estacionamento do Campus Anglo</p>
+  <div class="box">
+    <b>Dataset disponível em</b><br>
+    github.com/ChristianKringel/tec-viii<br>
+    drive.google.com/drive/folders/1TzQct9VGSevgPlzMjUzr4fokH7r9WS3x
+  </div>
+  <div style="margin-top:30px;font-size:14.5px;opacity:.88;line-height:1.7">
+    Christian Rodrigo Miritz Kringel · Henrique Colares Versiani<br>
+    Vinicius Hallmann · Thiago Dias Mazzoni
+  </div>
+</section>
+
+</body>
+</html>
