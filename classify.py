@@ -2,7 +2,9 @@ import sys, os, glob, shutil, csv
 
 # Classifica cada imagem pela contagem de carros (classe "carro") nas anotacoes YOLO.
 # Motos nao contam: ficam em area propria e nao ocupam vaga de carro.
-# Uso: python classify.py <labels_dir> <images_dir> <out_dir>
+# Uso: python classify.py <labels_dir> <images_dir> <out_dir> [extras_dir]
+# extras_dir (opcional): imagens sem anotacao ja classificadas a mao, em extras_dir/<classe>/
+# (ex.: fotos editadas para remover carros, com prefixo "gerada_"). Sao copiadas como estao.
 BAIXA_MAX = 24   # <= 24 carros -> baixa-ocupacao
 MEIO_MAX = 35    # 25..35 -> meio-termo; >= 36 -> alta-ocupacao
 CLASSES = ("baixa-ocupacao", "meio-termo", "alta-ocupacao")
@@ -13,6 +15,7 @@ def classe(n):
     return "alta-ocupacao"
 
 labels_dir, images_dir, out_dir = sys.argv[1], sys.argv[2], sys.argv[3]
+extras_dir = sys.argv[4] if len(sys.argv) > 4 else None
 names = open(glob.glob(os.path.join(labels_dir, "**", "obj.names"), recursive=True)[0]).read().split()
 carro = names.index("carro")
 labels = {os.path.splitext(os.path.basename(p))[0]: p
@@ -38,10 +41,20 @@ for img_path in sorted(glob.glob(os.path.join(images_dir, "*"))):
     rows.append((os.path.basename(img_path), n_carros, len(ids) - n_carros, c))
     print(f"{stem}: {n_carros} carros -> {c}")
 
+if extras_dir:
+    for c in CLASSES:
+        for img_path in sorted(glob.glob(os.path.join(extras_dir, c, "*"))):
+            if os.path.splitext(img_path)[1].lower() not in (".jpg", ".jpeg", ".png"):
+                continue
+            nome = os.path.basename(img_path)
+            shutil.copy2(img_path, os.path.join(out_dir, c, nome))
+            rows.append((nome, "", "", c))
+            print(f"{nome}: classificada a mao -> {c}")
+
 with open(os.path.join(out_dir, "classificacao.csv"), "w", newline="") as f:
     w = csv.writer(f)
     w.writerow(["imagem", "carros", "outros_veiculos", "classe"])
-    w.writerows(sorted(rows, key=lambda r: r[1]))
+    w.writerows(sorted(rows, key=lambda r: (r[1] == "", r[1])))
 
 print()
 for c in CLASSES:
