@@ -1,0 +1,73 @@
+{
+  "imagens": {
+    "train": {
+      "alta-ocupacao": 12,
+      "baixa-ocupacao": 18,
+      "meio-termo": 10
+    },
+    "val": {
+      "alta-ocupacao": 6,
+      "baixa-ocupacao": 0,
+      "meio-termo": 3
+    },
+    "test": {
+      "alta-ocupacao": 6,
+      "baixa-ocupacao": 1,
+      "meio-termo": 3
+    }
+  },
+  "pesos": {
+    "best": {
+      "epoca": 30,
+      "top1_val": 1.0,
+      "top1_teste": 0.800000011920929,
+      "acertos": 8,
+      "imagens": 10,
+      "pasta": "/home/christian/Desktop/Codes/tec-viii/avaliacao/runs/teste_best"
+    },
+    "last": {
+      "epoca": 30,
+      "top1_val": 1.0,
+      "top1_teste": 0.800000011920929,
+      "acertos": 8,
+      "imagens": 10,
+      "pasta": "/home/christian/Desktop/Codes/tec-viii/avaliacao/runs/teste_last"
+    }
+  },
+  "por_classe": {
+    "alta-ocupacao": {
+      "precisao": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "imagens": 6
+    },
+    "baixa-ocupacao": {
+      "precisao": 0.3333333333333333,
+      "recall": 1.0,
+      "f1": 0.5,
+      "imagens": 1
+    },
+    "meio-termo": {
+      "precisao": 1.0,
+      "recall": 0.3333333333333333,
+      "f1": 0.5,
+      "imagens": 3
+    }
+  },
+  "f1_macro": 0.6666666666666666,
+  "precisao_macro": 0.7777777777777777,
+  "recall_macro": 0.7777777777777778,
+  "acuracia_csv": 0.8,
+  "sem_versao_editada_no_treino": {
+    "imagens": 8,
+    "acertos": 7,
+    "excluidas": [
+      "test/meio-termo/WhatsApp Image 2026-09-09 at 12.34.44 (3).jpeg",
+      "test/meio-termo/WhatsApp Image 2026-09-15 at 08.06.39.jpeg"
+    ]
+  },
+  "referencia_mais_frequente": {
+    "classe": "alta-ocupacao",
+    "acuracia": 0.6
+  }
+}
