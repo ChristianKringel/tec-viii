@@ -5,6 +5,8 @@ import sys, os, glob, shutil, csv
 # Uso: python classify.py <labels_dir> <images_dir> <out_dir> [extras_dir]
 # extras_dir (opcional): imagens sem anotacao ja classificadas a mao, em extras_dir/<classe>/
 # (ex.: fotos editadas para remover carros, com prefixo "gerada_"). Sao copiadas como estao.
+# rotulos_corrigidos.csv (ao lado deste script): classe definida a mao para fotos cuja anotacao
+# ficou incompleta; a contagem continua no CSV, mas a classe vem da correcao.
 BAIXA_MAX = 24   # <= 24 carros -> baixa-ocupacao
 MEIO_MAX = 35    # 25..35 -> meio-termo; >= 36 -> alta-ocupacao
 CLASSES = ("baixa-ocupacao", "meio-termo", "alta-ocupacao")
@@ -18,6 +20,8 @@ labels_dir, images_dir, out_dir = sys.argv[1], sys.argv[2], sys.argv[3]
 extras_dir = sys.argv[4] if len(sys.argv) > 4 else None
 names = open(glob.glob(os.path.join(labels_dir, "**", "obj.names"), recursive=True)[0]).read().split()
 carro = names.index("carro")
+arq_corr = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rotulos_corrigidos.csv")
+corrigidas = {r["imagem"]: r for r in csv.DictReader(open(arq_corr))} if os.path.exists(arq_corr) else {}
 labels = {os.path.splitext(os.path.basename(p))[0]: p
           for p in glob.glob(os.path.join(labels_dir, "**", "*.txt"), recursive=True)}
 
@@ -37,9 +41,13 @@ for img_path in sorted(glob.glob(os.path.join(images_dir, "*"))):
     ids = [int(l.split()[0]) for l in open(labels[stem]) if len(l.split()) == 5]
     n_carros = ids.count(carro)
     c = classe(n_carros)
+    nota = ""
+    if os.path.basename(img_path) in corrigidas:
+        nota = f" (pela contagem seria {c}; corrigida em rotulos_corrigidos.csv)"
+        c = corrigidas[os.path.basename(img_path)]["classe"]
     shutil.copy2(img_path, os.path.join(out_dir, c, os.path.basename(img_path)))
     rows.append((os.path.basename(img_path), n_carros, len(ids) - n_carros, c))
-    print(f"{stem}: {n_carros} carros -> {c}")
+    print(f"{stem}: {n_carros} carros -> {c}{nota}")
 
 if extras_dir:
     for c in CLASSES:
