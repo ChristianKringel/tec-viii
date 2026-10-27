@@ -2,3 +2,7 @@ dataset_cls/
 dataset_cls.zip
 .venv-lama/
 teste-remocao/
+__pycache__/
+.venv-yolo/
+cv_saida/
+avaliacao/yolo26n-cls.pt
