@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Classificação de Ocupação — TEC VIII</title>
+<style>
+  /* ---------- tokens ---------- */
+  :root{
+    --blue:#0F74A9;
+    --blue-dark:#08415F;
+    --blue-deep:#062F45;
+    --blue-soft:#E8F2F8;
+    --blue-line:#CCE2EF;
+    --orange:#C2620F;
+    --orange-soft:#FBEEE1;
+    --ink:#16212B;
+    --ink-2:#3D4E5C;
+    --muted:#6B7C8A;
+    --rule:#E2E8ED;
+    --surface:#FFFFFF;
+    --W:1280px;
+    --H:720px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#4a5560;font-family:"Inter","Liberation Sans",sans-serif;
+            color:var(--ink);-webkit-font-smoothing:antialiased}
+
+  .slide{
+    position:relative;width:var(--W);height:var(--H);
+    background:var(--surface);overflow:hidden;
+    margin:26px auto;box-shadow:0 10px 34px rgba(0,0,0,.34);
+    page-break-after:always;break-after:page;
+    display:flex;flex-direction:column;
+  }
+
+  /* ---------- footer bar ---------- */
+  .bar{
+    position:absolute;left:0;right:0;bottom:0;height:56px;background:var(--blue);
+    display:flex;align-items:center;padding:0 34px;color:#fff;
+  }
+  .bar .disc{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.95}
+  .bar .num{margin-left:auto;font-size:15px;font-weight:700;opacity:.95;padding-right:26px}
+  .bar .mark{display:flex;align-items:center;gap:12px;border-left:1.5px solid rgba(255,255,255,.45);padding-left:22px}
+  .bar .mark img{height:30px}
+  .bar .mark span{font-size:19px;font-weight:800;letter-spacing:.09em}
+
+  /* ---------- content frame ---------- */
+  .body{flex:1;padding:44px 62px 76px;display:flex;flex-direction:column;min-height:0}
+  .body.tight{padding-top:36px}
+
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+           color:var(--blue);margin-bottom:9px}
+  h2{font-size:37px;font-weight:800;line-height:1.1;letter-spacing:-.02em;color:var(--blue-dark)}
+  h2 .thin{font-weight:400;color:var(--muted)}
+  .sub{margin-top:9px;font-size:16.5px;color:var(--ink-2);line-height:1.45;max-width:1010px}
+  .rule{height:4px;width:74px;background:var(--blue);border-radius:3px;margin:16px 0 22px}
+
+  /* ---------- text bits ---------- */
+  ul.pts{list-style:none;display:flex;flex-direction:column;gap:13px}
+  ul.pts li{position:relative;padding-left:26px;font-size:16.5px;line-height:1.48;color:var(--ink-2)}
+  ul.pts li::before{content:"";position:absolute;left:0;top:9px;width:9px;height:9px;
+                    border-radius:50%;background:var(--blue)}
+  ul.pts li b{color:var(--ink);font-weight:700}
+  ul.pts.sm li{font-size:15px;gap:10px}
+
+  .lead{font-size:17.5px;line-height:1.5;color:var(--ink-2)}
+  .lead b{color:var(--ink)}
+
+  /* ---------- cards / stats ---------- */
+  .cards{display:grid;gap:18px}
+  .card{background:#F8FAFC;border:1px solid var(--rule);border-left:5px solid var(--blue);
+        border-radius:10px;padding:19px 21px}
+  .card h4{font-size:15px;font-weight:800;color:var(--blue-dark);margin-bottom:7px;
+           letter-spacing:.01em}
+  .card p{font-size:14.5px;line-height:1.48;color:var(--ink-2)}
+  .card.orange{border-left-color:var(--orange)}
+  .card.orange h4{color:#8A4509}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .stat{background:var(--blue-soft);border-radius:11px;padding:16px 16px;text-align:center}
+  .stat .n{font-size:38px;font-weight:800;color:var(--blue-dark);line-height:1;letter-spacing:-.03em}
+  .stat .l{margin-top:8px;font-size:12.5px;font-weight:600;color:var(--ink-2);line-height:1.35}
+
+  /* ---------- images ---------- */
+  figure{margin:0}
+  .shot{width:100%;border-radius:9px;border:1px solid var(--rule);display:block;object-fit:cover}
+  figcaption{margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.4}
+  figcaption b{color:var(--ink-2);font-weight:700}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .grid4{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:16px 20px}
+  .split{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:start;flex:1;min-height:0}
+
+  /* ---------- tables ---------- */
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th{text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+     color:var(--muted);padding:0 10px 9px;border-bottom:2px solid var(--blue-line)}
+  td{padding:10px;border-bottom:1px solid var(--rule);color:var(--ink-2)}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink)}
+  tr.total td{border-bottom:none;font-weight:800;color:var(--ink);background:#F6F9FB}
+  .swatch{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:9px;
+          vertical-align:-1px}
+
+  /* ---------- code / tree ---------- */
+  pre.code{background:var(--blue-deep);color:#D9E8F2;border-radius:10px;padding:17px 20px;
+           font-family:"DejaVu Sans Mono","Liberation Mono",monospace;font-size:13px;line-height:1.72;
+           overflow:hidden}
+  pre.code .c{color:#7FB6D6}
+  pre.code .k{color:#F2B279}
+  pre.tree{background:#F8FAFC;border:1px solid var(--rule);border-radius:10px;padding:18px 22px;
+           font-family:"DejaVu Sans Mono","Liberation Mono",monospace;font-size:13.5px;line-height:1.85;
+           color:var(--ink-2)}
+  pre.tree .d{color:var(--blue);font-weight:700}
+  pre.tree .n{color:var(--muted)}
+
+  .chip{display:inline-block;background:var(--blue-soft);color:var(--blue-dark);border-radius:999px;
+        padding:5px 13px;font-size:12.5px;font-weight:700;margin:0 7px 7px 0}
+
+  .link{color:var(--blue);font-weight:700;word-break:break-all}
+
+  /* ---------- cover ---------- */
+  .cover{background:linear-gradient(160deg,#0B5C86 0%,#0F74A9 46%,#12557A 100%);
+         color:#fff;justify-content:center;align-items:center;text-align:center;padding:0 90px}
+  .cover::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 78% 16%,rgba(255,255,255,.14),transparent 46%),
+               radial-gradient(circle at 12% 88%,rgba(255,255,255,.10),transparent 44%)}
+  .cover > *{position:relative;z-index:2}
+  .seal-badge{width:126px;height:126px;border-radius:50%;background:#fff;margin:0 auto 24px;
+               display:flex;align-items:center;justify-content:center;
+               box-shadow:0 8px 22px rgba(0,0,0,.26)}
+  .seal-badge img{width:104px;display:block}
+  .cover .course{font-size:12.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+                 opacity:.85;margin-bottom:16px}
+  .cover h1{font-size:47px;font-weight:800;line-height:1.12;letter-spacing:-.025em;max-width:960px}
+  .cover .tag{margin-top:13px;font-size:18px;font-weight:400;opacity:.9}
+  .cover .hr{width:90px;height:3px;background:rgba(255,255,255,.5);border-radius:2px;margin:26px auto}
+  .cover .prof{font-size:15.5px;opacity:.93}
+  .cover .prof b{font-weight:700}
+  .cover .team{margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .cover .team span{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+                    border-radius:999px;padding:7px 17px;font-size:14px;font-weight:600}
+  .cover .inst{position:absolute;bottom:34px;left:0;right:0;font-size:12.5px;letter-spacing:.09em;
+               opacity:.72;z-index:2;text-transform:uppercase;font-weight:600}
+
+  /* ---------- agenda ---------- */
+  .agenda{display:grid;grid-template-columns:1fr 1fr;gap:14px 30px;margin-top:6px}
+  .ag{display:flex;gap:15px;align-items:center;padding:13px 17px;background:#F8FAFC;
+      border:1px solid var(--rule);border-radius:10px}
+  .ag .i{width:31px;height:31px;flex:none;border-radius:8px;background:var(--blue);color:#fff;
+         display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800}
+  .ag .t{font-size:15.5px;font-weight:700;color:var(--blue-dark)}
+
+  /* ---------- closing ---------- */
+  .close{background:linear-gradient(160deg,#0B5C86 0%,#0F74A9 50%,#12557A 100%);color:#fff;
+         justify-content:center;align-items:center;text-align:center;padding:0 90px}
+  .close::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.13),transparent 45%)}
+  .close > *{position:relative;z-index:2}
+  .close h1{font-size:52px;font-weight:800;letter-spacing:-.02em}
+  .close p{margin-top:14px;font-size:18px;opacity:.9}
+  .close .box{margin-top:32px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.24);
+              border-radius:13px;padding:20px 34px;font-size:14.5px;line-height:1.85}
+  .close .box b{letter-spacing:.06em;font-size:12px;text-transform:uppercase;opacity:.8}
+
+  .note{margin-top:auto;margin-bottom:20px;font-size:13px;color:var(--muted);
+        border-top:1px solid var(--rule);padding-top:12px;line-height:1.5}
+  .note b{color:var(--ink-2)}
+
+  @page{size:1280px 720px;margin:0}
+  @media print{
+    html,body{background:#fff}
+    .slide{margin:0;box-shadow:none}
+  }
+  /* ---------- extras desta apresentacao ---------- */
+  td.hi{color:var(--blue-dark);font-weight:800}
+  td.bad{color:#B3261E;font-weight:800}
+  .pill{display:inline-block;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700}
+  .pill.ok{background:#E3F3E6;color:#1E6B2E}
+  .pill.err{background:#FBE4E2;color:#9F2A20}
+  .obs{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+  .obs.h{color:var(--orange)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  code{font-family:"DejaVu Sans Mono","Liberation Mono",monospace;font-size:.9em;background:var(--blue-soft);
+       color:var(--blue-dark);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- ============ 1 · CAPA ============ -->
+<section class="slide cover">
+  <div class="seal-badge"><img src="img/ufpel.png" alt="Brasão da Universidade Federal de Pelotas"></div>
+  <div class="course">Tópicos Especiais em Computação VIII</div>
+  <h1>Classificação da Ocupação do Estacionamento com YOLO26</h1>
+  <div class="tag">Alta, meio-termo ou baixa ocupação — Campus Anglo, UFPel</div>
+  <div class="hr"></div>
+  <div class="prof">Prof. <b>Marcelo da Silva Dias</b></div>
+  <div class="team">
+    <span>Christian Rodrigo Miritz Kringel</span>
+    <span>Henrique Colares Versiani</span>
+    <span>Vinicius Hallmann</span>
+    <span>Thiago Dias Mazzoni</span>
+  </div>
+  <div class="inst">Ciência da Computação · Engenharia da Computação · Universidade Federal de Pelotas</div>
+</section>
+
+<!-- ============ 2 · ROTEIRO ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">Roteiro</div>
+    <h2>O que vamos apresentar</h2>
+    <div class="rule"></div>
+    <div class="agenda">
+      <div class="ag"><div class="i">1</div><div class="t">Alterações no dataset</div></div>
+      <div class="ag"><div class="i">2</div><div class="t">Caracterização e divisão do dataset</div></div>
+      <div class="ag"><div class="i">3</div><div class="t">Configuração do experimento</div></div>
+      <div class="ag"><div class="i">4</div><div class="t">Curvas de treinamento e validação</div></div>
+      <div class="ag"><div class="i">5</div><div class="t">Acurácia top-1 no teste</div></div>
+      <div class="ag"><div class="i">6</div><div class="t">Métricas por classe e F1 macro</div></div>
+      <div class="ag"><div class="i">7</div><div class="t">Matriz de confusão</div></div>
+      <div class="ag"><div class="i">8</div><div class="t">Galeria de erros</div></div>
+      <div class="ag"><div class="i">9</div><div class="t">Validação × teste</div></div>
+      <div class="ag"><div class="i">10</div><div class="t">Conclusão crítica</div></div>
+    </div>
+    <div class="note"><b>Em uma frase:</b> transformamos o dataset de detecção em um problema de classificação
+      em três níveis de ocupação, completamos a classe que faltava com imagens sintéticas e avaliamos o
+      modelo uma única vez num teste com 10 fotos reais nunca usadas em nenhuma decisão.</div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">2</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 3 · ALTERAÇÕES (1/3) ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">1 · Alterações no dataset</div>
+    <h2>De detecção para classificação</h2>
+    <div class="rule"></div>
+    <div class="split" style="grid-template-columns:1fr 1fr">
+      <div>
+        <ul class="pts sm">
+          <li><b>Nova tarefa:</b> em vez de uma caixa por veículo, um rótulo por foto. A classe vem da
+              contagem de carros anotados no pátio: <b>alta ≥ 36</b>, <b>meio-termo 25 a 35</b>,
+              <b>baixa ≤ 24</b>. Motos não contam (ficam em área própria).</li>
+          <li><b>Imagens artificiais adicionadas:</b> 11 imagens editadas por nós com IA e 25 imagens em
+              que removemos carros por <i>inpainting</i>.</li>
+        </ul>
+      </div>
+      <div>
+        <table>
+          <tr><th>Classe</th><th style="text-align:right">Antes (reais)</th><th style="text-align:right">Reais</th>
+              <th style="text-align:right">Sintéticas</th><th style="text-align:right">Final</th></tr>
+          <tr><td>alta-ocupação</td><td class="n">15</td><td class="n">24</td><td class="n">0</td><td class="n">24</td></tr>
+          <tr><td>meio-termo</td><td class="n">11</td><td class="n">12</td><td class="n">10</td><td class="n">22</td></tr>
+          <tr><td>baixa-ocupação</td><td class="n">2</td><td class="n bad">1</td><td class="n">26</td><td class="n">27</td></tr>
+          <tr class="total"><td>Total</td><td class="n">28</td><td class="n">37</td><td class="n">36</td><td class="n">73</td></tr>
+        </table>
+        <div class="card orange" style="margin-top:18px;padding:14px 18px">
+          <h4>O problema que motivou tudo</h4>
+          <p>Nas nossas coletas o pátio quase nunca estava vazio. Existe <b>uma única foto
+             real de baixa ocupação</b>. Sem dados sintéticos, a classe nem existiria no treino.</p>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Antes</b> = as 28 fotos anotadas apresentadas no trabalho anterior, já agrupadas pela regra de
+      contagem. Ficou mais balanceado no total (24 / 22 / 27), mas só com imagens sintéticas: entre as fotos reais
+      o desbalanceamento é extremo (24 / 12 / 1).</div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">3</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 4 · ALTERAÇÕES (2/3) ============ -->
+<section class="slide">
+  <div class="body tight">
+    <div class="eyebrow">1 · Alterações no dataset</div>
+    <h2>Como geramos as imagens sintéticas</h2>
+    <div class="rule" style="margin:13px 0 16px"></div>
+    <div class="grid3">
+      <figure><img class="shot" style="height:200px;object-position:center 65%" src="img/cls_alta.jpg" alt="Foto real de alta ocupação">
+        <figcaption><b>Original (alta, 39 carros).</b> Foto real usada como base.</figcaption></figure>
+      <figure><img class="shot" style="height:200px;object-position:center 65%" src="img/cls_inp_meio.jpg" alt="Mesma foto com carros removidos, meio-termo">
+        <figcaption><b>Inpainting → meio-termo.</b> SAM recorta o contorno do carro e da sombra; o LaMa preenche o asfalto.</figcaption></figure>
+      <figure><img class="shot" style="height:200px;object-position:center 65%" src="img/cls_inp_baixa.jpg" alt="Mesma foto com mais carros removidos, baixa">
+        <figcaption><b>Inpainting → baixa.</b> Mais carros removidos da mesma foto, até ficar com ≤ 24.</figcaption></figure>
+    </div>
+    <div class="split" style="grid-template-columns:1fr 1fr;margin-top:16px">
+      <ul class="pts sm">
+        <li><b>Controle de qualidade:</b> todas as imagens foram revisadas a olho; 16 reprovadas por borrões,
+            manchas ou postes e globos de luz apagados junto com o carro.</li>
+        <li><b>Veículos não anotados</b> (achados por um detector Faster R-CNN) são protegidos e nunca removidos.</li>
+      </ul>
+      <ul class="pts sm">
+        <li><b>Efeito esperado:</b> dar ao modelo exemplos de baixa e de meio-termo com o mesmo enquadramento das fotos reais.</li>
+        <li><b>Risco conhecido:</b> o modelo aprender o “borrão do inpainting” em vez da ocupação. Por isso as
+            variantes extras (mais cópias da mesma cena) foram descartadas.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">4</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 6 · CARACTERIZAÇÃO ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">2 · Caracterização e divisão do dataset</div>
+    <h2>A versão final e a divisão</h2>
+    <div class="rule"></div>
+    <div class="split" style="grid-template-columns:1.1fr .9fr">
+      <div>
+        <table>
+          <tr><th>Classe</th><th style="text-align:right">Treino</th><th style="text-align:right">Validação</th>
+              <th style="text-align:right">Teste</th><th style="text-align:right">Total</th></tr>
+          <tr><td>alta-ocupação</td><td class="n">12</td><td class="n">6</td><td class="n">6</td><td class="n">24</td></tr>
+          <tr><td>meio-termo</td><td class="n">10 <span style="color:var(--muted);font-weight:400">(6 reais)</span></td><td class="n">3</td><td class="n">3</td><td class="n">16</td></tr>
+          <tr><td>baixa-ocupação</td><td class="n">18 <span style="color:var(--muted);font-weight:400">(0 reais)</span></td><td class="n bad">0</td><td class="n">1</td><td class="n">19</td></tr>
+          <tr class="total"><td>Total</td><td class="n">40 (68%)</td><td class="n">9 (15%)</td><td class="n">10 (17%)</td><td class="n">59</td></tr>
+        </table>
+        <p class="lead" style="margin-top:14px;font-size:15px">Só fotos reais em validação e teste (25% das 37 fotos em cada).
+          As sintéticas só entram no treino; 14 de inpainting ficaram de fora porque a foto de origem está na validação ou no teste.</p>
+      </div>
+      <div class="cards" style="grid-template-columns:1fr;gap:12px">
+        <div class="card" style="padding:13px 17px"><h4>Está balanceado?</h4>
+          <p>No treino, sim (12 / 10 / 18). No teste, não: 6 de alta, 3 de meio e <b>1 de baixa</b>, que vira 0% ou 100% de recall com um único acerto.</p></div>
+        <div class="card orange" style="padding:13px 17px"><h4>Classes visualmente parecidas</h4>
+          <p>Alta e meio são o mesmo pátio com poucos carros de diferença, e os limites de 25 e 36 carros são arbitrários. Oclusão e carros pequenos ao fundo dificultam até a contagem humana.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">5</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 7 · INDEPENDÊNCIA ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">2 · Caracterização e divisão do dataset</div>
+    <h2>Como garantimos que o teste é independente</h2>
+    <div class="rule"></div>
+    <div class="cards" style="grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card"><h4>Divisão por sequência</h4>
+        <p>Fotos tiradas com menos de 20 s de diferença mostram os mesmos carros. Elas formam um grupo (18 grupos
+           nas 37 fotos) e o grupo inteiro vai para o mesmo conjunto.</p></div>
+      <div class="card"><h4>Sintéticas presas à origem</h4>
+        <p>Imagens de inpainting só entram no treino se a foto original também estiver no treino. Senão,
+           o modelo veria a cena do teste com outro rótulo.</p></div>
+      <div class="card"><h4>Origem das imagens editadas por IA</h4>
+        <p>Descobrimos de qual foto cada uma saiu comparando pontos do fundo (SIFT + RANSAC). 4 das 11 vieram de
+           fotos que estão na validação (2) ou no teste (2).</p></div>
+      <div class="card orange"><h4>Decisão consciente</h4>
+        <p>Mantivemos as 11 no treino porque eram a nossa principal fonte de baixa. Em troca, <b>reportamos o teste
+           com e sem as 2 fotos afetadas</b> (08.06.39 e 12.34.44).</p></div>
+    </div>
+    <div class="note"><b>Por que isso importa:</b> a primeira versão do <code>split.py</code> sorteava imagem por imagem e
+      espalhava a mesma cena (fotos da mesma sequência e suas cópias editadas) entre treino e teste.</div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">6</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 8 · CONFIGURAÇÃO ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">3 · Configuração do experimento</div>
+    <h2>Baseline do notebook, decisões pela validação</h2>
+    <div class="rule"></div>
+    <div class="split" style="grid-template-columns:.85fr 1.15fr">
+      <div>
+        <pre class="code"><span class="k">model</span>      yolo26n-cls.pt  <span class="c"># pré-treinado (ImageNet)</span>
+<span class="k">epochs</span>     30
+<span class="k">imgsz</span>      224
+<span class="k">batch</span>      8
+<span class="k">seed</span>       0
+<span class="k">patience</span>   30
+<span class="k">fliplr</span>     0.0
+<span class="k">device</span>     cpu (Xeon E5-2680 v4)</pre>
+        <p class="lead" style="margin-top:12px;font-size:14.5px">Treino de 95 s. Variações de imgsz (320, 448), fliplr 0.5 e
+          o modelo <i>s</i>, testadas em caráter preliminar, não superaram o baseline: ficamos com ele.</p>
+      </div>
+      <div>
+        <div class="obs">Quais dados sintéticos usar? Validação cruzada (5 folds × 3 sementes)</div>
+        <table>
+          <tr><th>Treino</th><th style="text-align:right">Acurácia</th><th style="text-align:right">F1 macro</th></tr>
+          <tr><td>só reais</td><td class="n">72,8%</td><td class="n">0,64</td></tr>
+          <tr><td>+ editadas por IA</td><td class="n">75,3%</td><td class="n">0,65</td></tr>
+          <tr><td>+ inpainting</td><td class="n">75,3%</td><td class="n">0,69</td></tr>
+          <tr><td><b>+ IA + inpainting (escolhido)</b></td><td class="n hi">72,8%</td><td class="n hi">0,65</td></tr>
+          <tr><td>+ IA + inpainting + variantes</td><td class="n">75,3%</td><td class="n">0,66</td></tr>
+        </table>
+        <p class="lead" style="margin-top:10px;font-size:14px">Feita só com as 27 fotos reais fora do teste. Mede alta × meio
+          (não há foto real de baixa fora do teste). <b>Diferenças menores que uma foto</b> (3,7 pontos), dentro da variação entre sementes:
+          as sintéticas não atrapalham alta × meio, e são a única forma de ensinar baixa.</p>
+      </div>
+    </div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">7</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 9 · CURVAS ============ -->
+<section class="slide">
+  <div class="body tight">
+    <div class="eyebrow">4 · Curvas de treinamento e validação</div>
+    <h2>O treino convergiu, sem sinal de overfitting</h2>
+    <div class="rule" style="margin:13px 0 14px"></div>
+    <figure><img src="img/cls_curvas.png" style="width:100%;height:300px;object-fit:contain" alt="Loss de treino e validação e acurácia top-1 na validação por época">
+      <figcaption><b>results.csv</b> do treino oficial (treino: 40 imagens; validação: 9 fotos reais). Top-5 omitida: com 3 classes é sempre 100%.</figcaption></figure>
+    <div class="split" style="grid-template-columns:1fr 1fr;margin-top:12px">
+      <ul class="pts sm">
+        <li><b>Loss de treino</b> cai de 1,18 para cerca de 0,2, com oscilação (batch de 8 e muito aumento de dados).</li>
+        <li><b>Loss de validação</b> cai junto, de 1,61 para 0,12, e não volta a subir: não há overfitting visível.</li>
+      </ul>
+      <ul class="pts sm">
+        <li><b>Top-1 de validação</b> chega a 100% na época 12, cai para 89% e volta a 100% da época 24 em diante.</li>
+        <li>Com 9 fotos, a validação <b>satura</b>: todas as últimas épocas empatam, e a YOLO regrava o <code>best.pt</code> a cada empate. Resultado: best.pt = last.pt.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">8</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 10 · TOP-1 ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">5 · Acurácia top-1 no teste</div>
+    <h2>8 acertos em 10 fotos reais: 80%</h2>
+    <div class="rule"></div>
+    <table>
+      <tr><th>Pesos</th><th>Época</th><th style="text-align:right">Top-1 validação</th><th style="text-align:right">Top-1 teste (acertos / imagens)</th></tr>
+      <tr><td><code>best.pt</code></td><td>30</td><td class="n">100% (9 / 9)</td><td class="n hi">80% (8 / 10)</td></tr>
+      <tr><td><code>last.pt</code></td><td>30</td><td class="n">100% (9 / 9)</td><td class="n">80% (8 / 10)</td></tr>
+      <tr><td>Referência: sempre “alta”</td><td>—</td><td class="n">—</td><td class="n">60% (6 / 10)</td></tr>
+      <tr class="total"><td>best.pt sem as 2 fotos com versão editada no treino</td><td>30</td><td class="n">—</td><td class="n">88% (7 / 8)</td></tr>
+    </table>
+    <div class="cards" style="grid-template-columns:1fr 1fr;gap:16px;margin-top:20px">
+      <div class="card"><h4>É bom para o problema?</h4>
+        <p>Supera a referência em 2 fotos (20 pontos). Mas com 10 imagens cada foto vale 10 pontos: o intervalo de
+           confiança de 95% de 8/10 vai de <b>49% a 94%</b>.</p></div>
+      <div class="card"><h4>best × last</h4>
+        <p>São a mesma época (a validação empatou em 100% até o fim), então dão o mesmo resultado. O modelo oficial continua sendo o <code>best.pt</code>.</p></div>
+    </div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">9</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 11 · POR CLASSE ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">6 · Métricas por classe e F1 macro</div>
+    <h2>A média esconde o meio-termo</h2>
+    <div class="rule"></div>
+    <div class="split" style="grid-template-columns:1.05fr .95fr">
+      <div>
+        <table>
+          <tr><th>Classe</th><th style="text-align:right">Precisão</th><th style="text-align:right">Recall</th>
+              <th style="text-align:right">F1</th><th style="text-align:right">Nº (teste)</th></tr>
+          <tr><td>alta-ocupação</td><td class="n">1,00</td><td class="n">1,00</td><td class="n">1,00</td><td class="n">6</td></tr>
+          <tr><td>meio-termo</td><td class="n">1,00</td><td class="n bad">0,33</td><td class="n bad">0,50</td><td class="n">3</td></tr>
+          <tr><td>baixa-ocupação</td><td class="n bad">0,33</td><td class="n">1,00</td><td class="n bad">0,50</td><td class="n">1</td></tr>
+          <tr class="total"><td>Média macro</td><td class="n">0,78</td><td class="n">0,78</td><td class="n">F1 macro 0,67</td><td class="n">10</td></tr>
+        </table>
+        <p class="lead" style="margin-top:12px;font-size:14px">Calculado a partir do <code>previsoes_teste.csv</code> (best.pt).
+          A acurácia do CSV (80%) bate com a do <code>model.val(split="test")</code>.</p>
+      </div>
+      <ul class="pts sm">
+        <li><b>Pior F1 e menor recall:</b> meio-termo, com 1 acerto em 3.</li>
+        <li><b>Mais falsos positivos:</b> baixa. O modelo previu baixa 3 vezes e acertou 1 (precisão 0,33).</li>
+        <li><b>Top-1 80% × F1 macro 0,67:</b> a acurácia é puxada pela alta, que é 60% do teste e perfeita.
+            O F1 macro dá o mesmo peso às três classes e mostra o problema.</li>
+        <li>Relação com os dados: meio e baixa são as classes com <b>menos fotos reais</b> no treino (6 e 0).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">10</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 12 · MATRIZ ============ -->
+<section class="slide">
+  <div class="body tight">
+    <div class="eyebrow">7 · Matriz de confusão normalizada (teste, best.pt)</div>
+    <h2>Meio-termo vira baixa</h2>
+    <div class="rule" style="margin:13px 0 14px"></div>
+    <div class="split" style="grid-template-columns:.95fr 1.05fr">
+      <figure><img src="img/cls_cm_teste.png" style="width:100%;height:440px;object-fit:contain" alt="Matriz de confusão normalizada do teste">
+        <figcaption><b>runs/…/teste_best/</b>. Colunas = classe verdadeira, linhas = prevista; cada coluna soma 1.</figcaption></figure>
+      <ul class="pts sm" style="margin-top:20px">
+        <li><b>Único par confundido:</b> meio-termo → baixa (2 de 3 fotos de meio). Nenhuma confusão envolvendo alta.</li>
+        <li><b>O modelo puxa para baixa</b>, não para alta. Na validação cruzada, o erro típico era meio → alta.</li>
+        <li><b>Hipótese:</b> as 18 imagens de baixa do treino são sintéticas, feitas apagando carros de fotos de alta e de meio. Pátio com
+            “buracos” de asfalto passou a significar baixa, e uma foto real de meio também tem muito asfalto livre.</li>
+        <li>As três classes são o mesmo pátio, o mesmo fundo e a mesma luz: a única diferença é quantos carros há, algo que um
+            classificador de imagem inteira não conta explicitamente.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">11</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 13 · GALERIA ============ -->
+<section class="slide">
+  <div class="body tight">
+    <div class="eyebrow">8 · Galeria de erros</div>
+    <h2>Um erro confiante explicado pelo dataset</h2>
+    <div class="rule" style="margin:13px 0 14px"></div>
+    <div class="grid3">
+      <figure><img class="shot" style="height:190px" src="img/cls_erro_0806.jpg" alt="Foto 08.06.39 do teste">
+        <figcaption><span class="pill err">ERRO · 86%</span> <b>08.06.39 (teste)</b> — real: meio-termo (27 carros), previsto: baixa.</figcaption></figure>
+      <figure><img class="shot" style="height:190px" src="img/cls_erro_ia004.jpg" alt="Imagem editada image004 do treino">
+        <figcaption><b>image004 (treino, rótulo baixa)</b> — a mesma foto, editada com IA para remover carros.</figcaption></figure>
+      <figure><img class="shot" style="height:190px" src="img/cls_erro_0833.jpg" alt="Foto 08.33.12 do teste">
+        <figcaption><span class="pill err">ERRO · 45%</span> <b>08.33.12 (teste)</b> — real: meio-termo, previsto: baixa.</figcaption></figure>
+    </div>
+    <div class="split" style="grid-template-columns:1fr 1fr;margin-top:14px">
+      <div><div class="obs h">Erro de alta confiança</div>
+        <ul class="pts sm">
+          <li>O modelo viu no treino <b>exatamente esta cena</b> com o rótulo baixa. Mesmo prédio, mesma luz, mesma sombra: só faltam carros.</li>
+          <li>É o vazamento que decidimos aceitar, e aqui ele <b>atrapalhou</b>. Sem as 2 fotos afetadas, o teste dá 7 / 8.</li>
+        </ul></div>
+      <div><div class="obs">Erro de baixa confiança</div>
+        <ul class="pts sm">
+          <li>Muitos carros pequenos e encobertos ao fundo, pelos globos e pelos postes: fica na fronteira entre meio e baixa até para nós.</li>
+          <li>Confiança de 45%: o modelo estava em dúvida, o que é coerente com uma imagem ambígua.</li>
+        </ul></div>
+    </div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">12</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 14 · VAL × TESTE ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">9 · Validação × teste</div>
+    <h2>100% na validação, 80% no teste</h2>
+    <div class="rule"></div>
+    <div class="stats" style="margin-bottom:20px">
+      <div class="stat"><div class="n">100%</div><div class="l">validação (9 / 9)<br>IC 95%: 70% a 100%</div></div>
+      <div class="stat"><div class="n">80%</div><div class="l">teste (8 / 10)<br>IC 95%: 49% a 94%</div></div>
+      <div class="stat"><div class="n">20</div><div class="l">pontos de diferença<br>= 2 fotos</div></div>
+      <div class="stat"><div class="n">~10</div><div class="l">pontos por foto<br>nos dois conjuntos</div></div>
+    </div>
+    <div class="cards" style="grid-template-columns:1fr 1fr;gap:14px">
+      <div class="card" style="padding:13px 17px"><h4>Compatível com o tamanho dos conjuntos?</h4>
+        <p>Sim. Os intervalos se sobrepõem bastante: com 9 e 10 imagens, 2 fotos de diferença é o esperado só pelo sorteio.</p></div>
+      <div class="card" style="padding:13px 17px"><h4>Conjuntos diferentes</h4>
+        <p>A validação não tem nenhuma foto de baixa e tem 6 das 9 de alta (a classe mais fácil). O teste tem as fotos difíceis: 3 de meio e a única de baixa.</p></div>
+      <div class="card" style="padding:13px 17px"><h4>Escolha pela validação</h4>
+        <p>Aqui pesou pouco, porque todas as últimas épocas empataram em 100%. A validação saturada não consegue diferenciar épocas.</p></div>
+      <div class="card orange" style="padding:13px 17px"><h4>Atenção</h4>
+        <p>Os dois erros do teste vêm de causas identificadas (vazamento e fronteira), mas uma diferença pequena não provaria que o modelo generaliza.</p></div>
+    </div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">13</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 15 · CONCLUSÃO ============ -->
+<section class="slide">
+  <div class="body">
+    <div class="eyebrow">10 · Conclusão crítica</div>
+    <h2>Promissor, mas não comprovado</h2>
+    <div class="rule"></div>
+    <div class="split" style="grid-template-columns:1fr 1fr">
+      <div>
+        <div class="obs">O que observamos</div>
+        <ul class="pts sm">
+          <li><b>Satisfatório só em parte:</b> 80% contra 60% da referência, alta perfeita, mas meio-termo com recall de 33%.</li>
+          <li><b>Mais fácil:</b> alta. <b>Mais difíceis:</b> meio-termo, que vira baixa, e a própria baixa, que tem 1 foto real e
+              cuja métrica depende de um único acerto.</li>
+          <li><b>Generaliza?</b> Não dá para afirmar: 10 fotos de teste, um único local, horários parecidos e uma classe aprendida quase toda com imagens sintéticas.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="obs h">O que mudaríamos</div>
+        <ul class="pts sm">
+          <li><b>Fotos reais de pátio vazio</b> (noite, fim de semana, férias): é a mudança de maior impacto.</li>
+          <li><b>Revisar a contagem</b> das fotos perto dos limites de 25 e 36 carros: um rótulo errado já distorceu uma conclusão nossa.</li>
+          <li>Gerar sintéticas só a partir de fotos do treino, eliminando o vazamento.</li>
+          <li>Comparar com <b>detecção + contagem</b>: o dataset de caixas já existe e a classe sai direto da contagem.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note"><b>Principal aprendizado:</b> os maiores efeitos no resultado vieram dos dados (rótulo errado,
+      vazamento entre conjuntos, cópias da mesma cena), não dos hiperparâmetros.</div>
+  </div>
+  <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">14</div>
+    <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
+</section>
+
+<!-- ============ 16 · ENCERRAMENTO ============ -->
+<section class="slide close">
+  <div class="seal-badge" style="width:96px;height:96px;margin-bottom:26px">
+    <img src="img/ufpel.png" style="width:78px" alt="Brasão da UFPel">
+  </div>
+  <h1>Obrigado!</h1>
+  <p>Classificação da ocupação do estacionamento — Campus Anglo</p>
+  <div class="box">
+    <b>Código e dataset</b><br>
+    github.com/ChristianKringel/tec-viii
+  </div>
+  <div style="margin-top:30px;font-size:14.5px;opacity:.88;line-height:1.7">
+    Christian Rodrigo Miritz Kringel · Henrique Colares Versiani<br>
+    Vinicius Hallmann · Thiago Dias Mazzoni
+  </div>
+</section>
+
+</body>
+</html>
