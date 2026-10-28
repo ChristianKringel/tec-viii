@@ -342,18 +342,22 @@
       <div class="card"><h4>Divisão por sequência</h4>
         <p>Fotos tiradas com menos de 20 s de diferença mostram os mesmos carros. Elas formam um grupo (18 grupos
            nas 37 fotos) e o grupo inteiro vai para o mesmo conjunto.</p></div>
-      <div class="card"><h4>Sintéticas presas à origem</h4>
-        <p>Imagens de inpainting só entram no treino se a foto original também estiver no treino. Senão,
-           o modelo veria a cena do teste com outro rótulo.</p></div>
-      <div class="card"><h4>Origem das imagens editadas por IA</h4>
-        <p>Descobrimos de qual foto cada uma saiu comparando pontos do fundo (SIFT + RANSAC). 4 das 11 vieram de
-           fotos que estão na validação (2) ou no teste (2).</p></div>
-      <div class="card orange"><h4>Decisão consciente</h4>
-        <p>Mantivemos as 11 no treino porque eram a nossa principal fonte de baixa. Em troca, <b>reportamos o teste
-           com e sem as 2 fotos afetadas</b> (08.06.39 e 12.34.44).</p></div>
+      <div class="card"><h4>Imagem editada fica junto da foto original</h4>
+        <p>Cada imagem de inpainting é uma foto real com carros apagados. Ela só entra no treino se a
+           foto original também estiver no treino. Se a original está no teste, o modelo já teria visto
+           aquela cena: por isso <b>14 imagens de inpainting foram descartadas</b>.</p></div>
+      <div class="card"><h4>De qual foto saiu cada imagem de IA?</h4>
+        <p>O nome das 11 imagens de IA não diz de qual foto elas vieram. Comparamos o fundo (prédio, postes,
+           guarda-corpo) com cada foto real para achar a original. <b>4 delas vieram de fotos que não estão
+           no treino</b>: 2 da validação e 2 do teste.</p></div>
+      <div class="card orange"><h4>Mantivemos as 11 mesmo assim</h4>
+        <p>Pela regra do card de cima, essas 4 deveriam sair. Mas elas eram a nossa principal fonte de exemplos de
+           baixa ocupação. Por isso ficaram, e <b>mostramos o resultado do teste com e sem as 2 fotos
+           afetadas</b> (08.06.39 e 12.34.44).</p></div>
     </div>
-    <div class="note"><b>Por que isso importa:</b> a primeira versão do <code>split.py</code> sorteava imagem por imagem e
-      espalhava a mesma cena (fotos da mesma sequência e suas cópias editadas) entre treino e teste.</div>
+    <div class="note"><b>Por que isso importa:</b> se a mesma cena aparece no treino e no teste, o modelo é avaliado
+      em algo que já viu e a nota fica inflada. A primeira versão do <code>split.py</code> sorteava imagem por imagem
+      e caía exatamente nesse problema.</div>
   </div>
   <div class="bar"><div class="disc">Tópicos Especiais em Computação VIII</div><div class="num">6</div>
     <div class="mark"><img src="img/ufpel_white.png" alt="UFPel"></div></div>
@@ -363,34 +367,46 @@
 <section class="slide">
   <div class="body">
     <div class="eyebrow">3 · Configuração do experimento</div>
-    <h2>Baseline do notebook, decisões pela validação</h2>
-    <div class="rule"></div>
-    <div class="split" style="grid-template-columns:.85fr 1.15fr">
+    <h2>Configuração do notebook e escolha dos dados de treino</h2>
+    <div class="rule" style="margin:13px 0 16px"></div>
+    <div class="split" style="grid-template-columns:.8fr 1.2fr;gap:30px">
       <div>
-        <pre class="code"><span class="k">model</span>      yolo26n-cls.pt  <span class="c"># pré-treinado (ImageNet)</span>
-<span class="k">epochs</span>     30
-<span class="k">imgsz</span>      224
-<span class="k">batch</span>      8
-<span class="k">seed</span>       0
-<span class="k">patience</span>   30
-<span class="k">fliplr</span>     0.0
-<span class="k">device</span>     cpu (Xeon E5-2680 v4)</pre>
-        <p class="lead" style="margin-top:12px;font-size:14.5px">Treino de 95 s. Variações de imgsz (320, 448), fliplr 0.5 e
-          o modelo <i>s</i>, testadas em caráter preliminar, não superaram o baseline: ficamos com ele.</p>
+        <pre class="code"><span class="k">model</span>    yolo26n-cls.pt <span class="c"># menor modelo, já pré-treinado</span>
+<span class="k">epochs</span>   30    <span class="c"># passadas pelo treino</span>
+<span class="k">imgsz</span>    224   <span class="c"># tamanho da imagem (px)</span>
+<span class="k">batch</span>    8     <span class="c"># imagens por passo</span>
+<span class="k">seed</span>     0     <span class="c"># sorteios fixos: repetível</span>
+<span class="k">patience</span> 30    <span class="c"># sem parada antecipada</span>
+<span class="k">fliplr</span>   0.0   <span class="c"># não espelha as fotos</span>
+<span class="k">device</span>   cpu   <span class="c"># treino levou 95 s</span></pre>
+        <p class="lead" style="margin-top:12px;font-size:14.5px">É a configuração do notebook da disciplina. O modelo já
+          sabe reconhecer formas (pré-treinado no ImageNet) e só aprende as nossas 3 classes. Testamos imagens maiores,
+          espelhamento e um modelo maior: <b>nenhum melhorou, então mantivemos</b>.</p>
       </div>
       <div>
-        <div class="obs">Quais dados sintéticos usar? Validação cruzada (5 folds × 3 sementes)</div>
-        <table>
-          <tr><th>Treino</th><th style="text-align:right">Acurácia</th><th style="text-align:right">F1 macro</th></tr>
-          <tr><td>só reais</td><td class="n">72,8%</td><td class="n">0,64</td></tr>
-          <tr><td>+ editadas por IA</td><td class="n">75,3%</td><td class="n">0,65</td></tr>
-          <tr><td>+ inpainting</td><td class="n">75,3%</td><td class="n">0,69</td></tr>
-          <tr><td><b>+ IA + inpainting (escolhido)</b></td><td class="n hi">72,8%</td><td class="n hi">0,65</td></tr>
-          <tr><td>+ IA + inpainting + variantes</td><td class="n">75,3%</td><td class="n">0,66</td></tr>
+        <div class="obs">Quais imagens sintéticas usar? Decidido por validação cruzada</div>
+        <p class="lead" style="font-size:14px;line-height:1.45">Com poucas fotos, uma divisão só depende de sorte. Então
+          separamos as <b>27 fotos reais que não estão no teste</b> em 5 partes e treinamos 5 vezes, cada vez avaliando
+          numa parte diferente:</p>
+        <div style="display:grid;grid-template-columns:auto repeat(5,1fr);gap:3px;margin:8px 0 6px;font-size:11px;font-weight:700;text-align:center">
+          <div style="color:var(--muted);text-align:left;padding-right:6px">treino 1</div>
+          <div style="background:var(--orange);color:#fff;border-radius:3px;padding:2px">avalia</div><div style="background:#DCE7F5;border-radius:3px;padding:2px">treina</div><div style="background:#DCE7F5;border-radius:3px;padding:2px">treina</div><div style="background:#DCE7F5;border-radius:3px;padding:2px">treina</div><div style="background:#DCE7F5;border-radius:3px;padding:2px">treina</div>
+          <div style="color:var(--muted);text-align:left;padding-right:6px">treino 2</div>
+          <div style="background:#DCE7F5;border-radius:3px;padding:2px">treina</div><div style="background:var(--orange);color:#fff;border-radius:3px;padding:2px">avalia</div><div style="background:#DCE7F5;border-radius:3px;padding:2px">treina</div><div style="background:#DCE7F5;border-radius:3px;padding:2px">treina</div><div style="background:#DCE7F5;border-radius:3px;padding:2px">treina</div>
+          <div style="color:var(--muted);text-align:left;padding-right:6px">…</div>
+          <div style="grid-column:span 5;color:var(--muted);font-weight:400">até a parte 5; tudo repetido com 3 sementes = 15 treinos por linha da tabela</div>
+        </div>
+        <table style="font-size:13.5px">
+          <tr><th>Treino com</th><th style="text-align:right">Acurácia média</th></tr>
+          <tr><td>só fotos reais</td><td class="n">72,8%</td></tr>
+          <tr><td>+ editadas por IA</td><td class="n">75,3%</td></tr>
+          <tr><td>+ inpainting</td><td class="n">75,3%</td></tr>
+          <tr><td><b>+ IA + inpainting (escolhido)</b></td><td class="n hi">72,8%</td></tr>
+          <tr><td>+ IA + inpainting + variantes</td><td class="n">75,3%</td></tr>
         </table>
-        <p class="lead" style="margin-top:10px;font-size:14px">Feita só com as 27 fotos reais fora do teste. Mede alta × meio
-          (não há foto real de baixa fora do teste). <b>Diferenças menores que uma foto</b> (3,7 pontos), dentro da variação entre sementes:
-          as sintéticas não atrapalham alta × meio, e são a única forma de ensinar baixa.</p>
+        <p class="lead" style="margin-top:8px;font-size:13.5px;line-height:1.45">Uma foto a mais ou a menos já muda 3,7 pontos:
+          <b>na prática, todas empatam</b>. As sintéticas não pioram o modelo, e são a única forma de ele ver baixa
+          ocupação no treino (a única foto real de baixa está no teste). Por isso usamos IA + inpainting.</p>
       </div>
     </div>
   </div>
@@ -408,12 +424,12 @@
       <figcaption><b>results.csv</b> do treino oficial (treino: 40 imagens; validação: 9 fotos reais). Top-5 omitida: com 3 classes é sempre 100%.</figcaption></figure>
     <div class="split" style="grid-template-columns:1fr 1fr;margin-top:12px">
       <ul class="pts sm">
-        <li><b>Loss de treino</b> cai de 1,18 para cerca de 0,2, com oscilação (batch de 8 e muito aumento de dados).</li>
-        <li><b>Loss de validação</b> cai junto, de 1,61 para 0,12, e não volta a subir: não há overfitting visível.</li>
+        <li><b>Loss de treino</b> (o erro nas imagens de treino) cai de 1,18 para cerca de 0,2: o modelo está aprendendo. Oscila porque cada passo usa só 8 imagens, com recortes e cores sorteados.</li>
+        <li><b>Loss de validação</b> (o erro em fotos que o modelo não treina) cai junto, de 1,61 para 0,12, e não volta a subir. Se subisse, seria sinal de que o modelo está decorando o treino (overfitting).</li>
       </ul>
       <ul class="pts sm">
-        <li><b>Top-1 de validação</b> chega a 100% na época 12, cai para 89% e volta a 100% da época 24 em diante.</li>
-        <li>Com 9 fotos, a validação <b>satura</b>: todas as últimas épocas empatam, e a YOLO regrava o <code>best.pt</code> a cada empate. Resultado: best.pt = last.pt.</li>
+        <li><b>Acurácia de validação</b> chega a 100% na época 12, cai para 89% (1 erro em 9 fotos) e volta a 100% da época 24 em diante.</li>
+        <li>A YOLO guarda o <code>best.pt</code> (época com melhor validação) e o <code>last.pt</code> (última época). Como as últimas épocas empatam em 100%, ela atualiza o best.pt a cada empate: <b>no fim, os dois são o mesmo modelo</b>.</li>
       </ul>
     </div>
   </div>
