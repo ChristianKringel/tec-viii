@@ -161,8 +161,7 @@ with open(os.path.join(a.out, "split.csv"), "w", newline="") as f:
     w.writerows(sorted(rows, key=lambda r: (r[1], r[0])))
 
 with open(os.path.join(a.out, "data.yaml"), "w") as f:
-    f.write("# path: troque pelo caminho absoluto desta pasta se a YOLO nao achar as imagens\n")
-    f.write(f"path: {os.path.abspath(a.out)}\n")
+    # sem "path": a YOLO usa a pasta deste data.yaml, entao o dataset funciona em qualquer PC
     f.write("train: images/train\nval: images/val\ntest: images/test\n\nnames:\n")
     for i, c in enumerate(novas):
         f.write(f"  {i}: {c}\n")
